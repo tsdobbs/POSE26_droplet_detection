@@ -6,10 +6,11 @@ import cv2 as cv
 import numpy as np
 import pandas as pd
 
-# -----------------------
-# User-adjustable params
-# -----------------------
+# Filepaths
 IMAGE_PATH = "./images/playground_V2.png"
+CSV_OUT = "output/droplet_measurements.csv"
+OVERLAY_OUT = "output/overlay_detections.png"
+MASK_OUT = "output/mask.png"
 
 # Contrast enhancement
 USE_CLAHE = True
@@ -43,9 +44,6 @@ MIN_AREA = 50
 MAX_AREA = 1000
 MIN_CIRCULARITY = 0.5
 MAX_CIRCULARITY = 1.2
-
-# Output
-CSV_OUT = "output/droplet_measurements.csv"
 
 ### Load and preprocess
 img = cv.imread(IMAGE_PATH, cv.IMREAD_COLOR)
@@ -134,11 +132,10 @@ for label in range(1, num_labels):  # skip background
     )
     cx, cy = centroids[label]
 
-    output_filename = "output/overlay_detections.png"
     rows.append(
         {
             "label": label,
-            "filename": output_filename,
+            "filename": CSV_OUT,
             "area_px": contour_area,
             "perimeter_px": perimeter,
             "circularity": circularity,
@@ -160,5 +157,5 @@ df.to_csv(CSV_OUT, index=False)
 print(f"Detected droplets: {len(df)}")
 print(df[["area_px", "circularity"]].head())
 
-cv.imwrite("output/overlay_detections.png", overlay)
-cv.imwrite("output/mask.png", mask)
+cv.imwrite(OVERLAY_OUT, overlay)
+cv.imwrite(MASK_OUT, mask)
