@@ -16,15 +16,13 @@ def get_file_content() -> pd.DataFrame:
     return pd.read_csv(filepath)
 
 
-def get_luminance(row: pd.Series) -> float:
-    file_name = 'photo_20260423_202715.jpg' #TODO swap for row.file_source
-    filepath = os.path.join(IMAGE_DIRECTORY, file_name)
+def get_luminance(filename, centroid_x, centroid_y) -> float:
+    filepath = filename
     img = cv2.imread(filepath)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
-
-    x, y = int(row.centroid_x), int(row.centroid_y)      # center coordinate
-    r = 5               # half-size of the square region - assumed value. Should consider
+    x, y = int(centroid_x), int(centroid_y)      # center coordinate
+    r = 10               # half-size of the square region - assumed value. Should consider
 
     # clamp bounds so they stay inside the image
     h, w = gray.shape
@@ -39,9 +37,13 @@ def get_luminance(row: pd.Series) -> float:
     return avg_brightness
 
 
+def get_luminance_from_row(row:pd.Series) -> float:
+    return get_luminance(row.filename, row.centroid_x, row.centroid_y)
+
+
 if __name__ == "__main__":
     df = get_file_content()
 
-    df['luminance'] = df.apply(get_luminance, axis = 1)
+    df['luminance'] = df.apply(get_luminance_from_row, axis = 1)
 
     df.to_csv(OUTPUT_FILEPATH)

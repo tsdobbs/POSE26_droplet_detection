@@ -6,6 +6,8 @@ import cv2 as cv
 import numpy as np
 import pandas as pd
 
+from droplet_content_analysis import get_luminance
+
 # Filepaths
 IMAGE_PATH = "./images/playground_V2.png"
 CSV_OUT = "output/droplet_measurements.csv"
@@ -132,6 +134,8 @@ for label in range(1, num_labels):  # skip background
     )
     cx, cy = centroids[label]
 
+    luminance = get_luminance(IMAGE_PATH, cx, cy)
+
     rows.append(
         {
             "label": label,
@@ -145,11 +149,13 @@ for label in range(1, num_labels):  # skip background
             "bbox_y": y,
             "bbox_w": w,
             "bbox_h": h,
+            "luminance": luminance
         }
     )
 
     cv.drawContours(overlay, [contour], -1, (0, 255, 0), 2)
     cv.circle(overlay, (int(cx), int(cy)), 3, (0, 0, 255), -1)
+    cv.putText(overlay, str(int(luminance)), (int(cx) + 200, int(cy)), fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
 
 df = pd.DataFrame(rows).sort_values(["centroid_y", "centroid_x"]).reset_index(drop=True)
 df.to_csv(CSV_OUT, index=False)
